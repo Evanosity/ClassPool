@@ -35,7 +35,7 @@ public class ClassPool<T> {
 
         File[] rawClasses = new File(url.getFile()).listFiles();
 
-        //index the calsses.
+        //index the classes.
         indexClasses(path, baseType, rawClasses);
     }
 
@@ -48,17 +48,17 @@ public class ClassPool<T> {
 
         try{
             for(File file : files){
-                String name = file.getName();
+                String fileName = file.getName();
 
                 //if the given file is a directory, index all the classes inside of it.
                 if(file.isDirectory())
-                    indexClasses(path + "." + file.getName(), baseType, file.listFiles());
+                    indexClasses(path + "." + fileName, baseType, file.listFiles());
 
                 //otherwise, if its a class file, load er up.
-                else if(name.endsWith(".class")){
-                    String fullName = path + "." + name.substring(0, name.length() - 6);
+                else if(fileName.endsWith(".class")){
+                    String fullClassName = path + "." + fileName.substring(0, fileName.length() - 6);
 
-                    Class<?> loadedClass = Class.forName(fullName);
+                    Class<?> loadedClass = Class.forName(fullClassName);
                     Class<?> superClass = loadedClass.getSuperclass();
 
                     //if the class exists, has a valid superclass AND has the indexed annotation, index it
