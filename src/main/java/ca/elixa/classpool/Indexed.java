@@ -1,4 +1,4 @@
-package ca.grindforloot.classpool;
+package ca.elixa.classpool;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

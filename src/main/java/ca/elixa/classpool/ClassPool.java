@@ -1,4 +1,4 @@
-package ca.grindforloot.classpool;
+package ca.elixa.classpool;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -22,12 +22,16 @@ public class ClassPool<T> {
 
     private Map<String, T> index = new HashMap<>();
 
+    protected final Class<T> baseType;
+
     /**
      * Initialize the ClassPool
      * @param path
      * @param baseType
      */
-    public ClassPool(String path, Class<T> baseType){
+    public ClassPool(String path, Class<T> type){
+
+        this.baseType = type;
 
         //using the classloader, locate the package we are searching for.
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -73,7 +77,7 @@ public class ClassPool<T> {
                         String className = loadedClass.getName().replace(path + ".", "");
 
                         index.put(className, instance);
-                        System.out.println(className);
+                        System.out.println("Indexing " + className + " for group " + baseType.getName());
                     }
                 }
             }
@@ -84,11 +88,17 @@ public class ClassPool<T> {
     }
 
     /**
-     * Return a stored object
+     * Return a stored object. Will throw an error instead of returning null.
      * @param key
      * @return
      */
     public T get(String key){
-        return index.get(key);
+
+        T result = index.get(key);
+
+        if(result == null)
+            throw new IllegalArgumentException("No class found for name " + key + " for base type " + baseType.getName());
+
+        return result;
     }
 }
