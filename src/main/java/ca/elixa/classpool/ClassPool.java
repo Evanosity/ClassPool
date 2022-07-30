@@ -27,7 +27,7 @@ public class ClassPool<T> {
     /**
      * Initialize the ClassPool
      * @param path
-     * @param baseType
+     * @param type
      */
     public ClassPool(String path, Class<T> type){
 
@@ -63,10 +63,10 @@ public class ClassPool<T> {
                     String fullClassName = path + "." + fileName.substring(0, fileName.length() - 6);
 
                     Class<?> loadedClass = Class.forName(fullClassName);
-                    Class<?> superClass = loadedClass.getSuperclass();
+
 
                     //if the class exists, has a valid superclass AND has the indexed annotation, index it
-                    if(superClass != null && superClass.equals(baseType) && loadedClass.isAnnotationPresent(Indexed.class)) {
+                    if(loadedClass.isAnnotationPresent(Indexed.class) && baseType.isAssignableFrom(loadedClass)) {
 
                         Constructor<? extends T> cons = (Constructor<? extends T>) loadedClass.getDeclaredConstructor();
                         //this means we can disallow the objects from being instantiated normally, via private constructors
@@ -83,6 +83,7 @@ public class ClassPool<T> {
             }
         }
         catch(Exception e){
+            e.printStackTrace();
             throw new RuntimeException("Fatal error while indexing " + path);
         }
     }
