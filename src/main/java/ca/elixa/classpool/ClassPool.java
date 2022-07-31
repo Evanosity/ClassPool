@@ -3,8 +3,7 @@ package ca.elixa.classpool;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A directory of classes
@@ -86,6 +85,14 @@ public class ClassPool<T> {
             e.printStackTrace();
             throw new RuntimeException("Fatal error while indexing " + path);
         }
+    }
+
+    /**
+     *
+     * @return an immutable set of strings representing the types stored in this pool
+     */
+    public Set<String> getStoredTypes(){
+        return Collections.unmodifiableSet(index.keySet());
     }
 
     /**
