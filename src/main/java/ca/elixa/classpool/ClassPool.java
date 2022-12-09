@@ -32,14 +32,16 @@ public class ClassPool<T> {
 
         this.baseType = type;
 
-        //using the classloader, locate the package we are searching for.
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        URL url = loader.getResource(path.replace(".", "/"));
+        if(path != null){
+            //using the classloader, locate the package we are searching for.
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            URL url = loader.getResource(path.replace(".", "/"));
 
-        File[] rawClasses = new File(url.getFile()).listFiles();
+            File[] rawClasses = new File(url.getFile()).listFiles();
 
-        //index the classes.
-        indexClasses(path, baseType, rawClasses);
+            //index the classes.
+            indexClasses(path, baseType, rawClasses);
+        }
     }
 
     /**
