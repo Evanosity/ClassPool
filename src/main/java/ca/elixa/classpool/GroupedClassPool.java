@@ -66,12 +66,17 @@ public class GroupedClassPool<T> extends ClassPool<T>{
     @Override
     public T get(String key){
         for(ClassPool<T> p : poolOfPools){
-            T result = p.get(key);
 
-            if(p == null)
+            T result = null;
+
+            try{
+                result = p.get(key);
+            }
+            catch(IllegalArgumentException e){
                 continue;
-            else
-                return result;
+            }
+
+            return result;
         }
 
         throw new IllegalArgumentException("No class found for name " + key + " for base type " + baseType.getName());
