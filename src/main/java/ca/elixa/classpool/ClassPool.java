@@ -78,7 +78,7 @@ public class ClassPool<T> {
                         String className = loadedClass.getName().replace(path + ".", "");
 
                         index.put(className, instance);
-                        System.out.println("Indexing " + className + " for group " + baseType.getName());
+                        //System.out.println("Indexing " + className + " for group " + baseType.getName());
                     }
                 }
             }
