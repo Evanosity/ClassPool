@@ -7,22 +7,22 @@ import java.util.*;
  * This is a classpool that acts as a pool of classpools.
  * @param <T>
  */
-public class GroupedClassPool<T> extends ClassPool<T>{
+public class GroupedClassPool<T> extends ClassPoolString<T> {
 
-    List<ClassPool<T>> poolOfPools;
+    List<ClassPoolString<T>> poolOfPools;
 
     /**
      * Initialize the ClassPool
      *
 =     * @param type
      */
-    public GroupedClassPool(Class<T> type, ClassPool<T>...pools) {
+    public GroupedClassPool(Class<T> type, ClassPoolString<T>...pools) {
         super(null, type);
 
         poolOfPools = new ArrayList<>();
 
         if(pools != null && pools.length != 0)
-            for(ClassPool<T> p : pools)
+            for(ClassPoolString<T> p : pools)
                 addPool(p);
     }
 
@@ -31,7 +31,7 @@ public class GroupedClassPool<T> extends ClassPool<T>{
      * @param p
      * @throws IllegalArgumentException if a duplicate type is present
      */
-    public void addPool(ClassPool<T> p){
+    public void addPool(ClassPoolString<T> p){
         Set<String> currentlyStoredTypes = getStoredTypes();
 
         for(String s : p.getStoredTypes())
@@ -49,7 +49,7 @@ public class GroupedClassPool<T> extends ClassPool<T>{
     public Set<String> getStoredTypes(){
         Set<String> result = new HashSet<>();
 
-        for(ClassPool<T> p : poolOfPools)
+        for(ClassPoolString<T> p : poolOfPools)
             result.addAll(p.getStoredTypes());
 
         return result;
@@ -65,7 +65,7 @@ public class GroupedClassPool<T> extends ClassPool<T>{
      */
     @Override
     public T get(String key){
-        for(ClassPool<T> p : poolOfPools){
+        for(ClassPoolString<T> p : poolOfPools){
 
             T result = null;
 

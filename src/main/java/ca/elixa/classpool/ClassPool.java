@@ -3,11 +3,15 @@ package ca.elixa.classpool;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A directory of classes
- * Given a package, scan the package and instantiate each of those classes. Map those instances by string
+ * Given a package, scan the package and instantiate each of those classes. The inheritors will handle how to index
+ * those classes
  * This effectively allows us to turn a string into a class. Instances of that class are held in memory,
  * but in the case of actions, that is a perfectly acceptable alternative to an enormous switch statement.
  *
@@ -17,9 +21,9 @@ import java.util.*;
  * @param <T> the base type that we are searching for (Ex: Action). T has to have a 0 argument constructor, which can (should)
  *           be private.
  */
-public class ClassPool<T> {
+public abstract class ClassPool<T, I> {
 
-    private Map<String, T> index = new HashMap<>();
+    private Map<I, T> index = new HashMap<>();
 
     protected final Class<T> baseType;
 
@@ -59,7 +63,7 @@ public class ClassPool<T> {
                 if(file.isDirectory())
                     indexClasses(path + "." + fileName, baseType, file.listFiles());
 
-                //otherwise, if its a class file, load er up.
+                    //otherwise, if its a class file, load er up.
                 else if(fileName.endsWith(".class")){
                     String fullClassName = path + "." + fileName.substring(0, fileName.length() - 6);
 
@@ -75,9 +79,9 @@ public class ClassPool<T> {
 
                         T instance = cons.newInstance();
 
-                        String className = loadedClass.getName().replace(path + ".", "");
+                        I i = indexMethod(instance, loadedClass, path);
 
-                        index.put(className, instance);
+                        index.put(i, instance);
                         //System.out.println("Indexing " + className + " for group " + baseType.getName());
                     }
                 }
@@ -89,11 +93,13 @@ public class ClassPool<T> {
         }
     }
 
+    public abstract I indexMethod(T instance, Class<?> loadedClass, String path);
+
     /**
      *
      * @return an immutable set of strings representing the types stored in this pool
      */
-    public Set<String> getStoredTypes(){
+    public Set<I> getStoredTypes(){
         return Collections.unmodifiableSet(index.keySet());
     }
 
@@ -102,7 +108,7 @@ public class ClassPool<T> {
      * @param key
      * @return
      */
-    public T get(String key){
+    public T get(I key){
 
         T result = index.get(key);
 
@@ -111,4 +117,5 @@ public class ClassPool<T> {
 
         return result;
     }
+
 }
