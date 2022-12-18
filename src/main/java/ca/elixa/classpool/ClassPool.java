@@ -20,6 +20,8 @@ import java.util.Set;
  * In any case, this will do for now.
  * @param <T> the base type that we are searching for (Ex: Action). T has to have a 0 argument constructor, which can (should)
  *           be private.
+ *
+ * @param <I> the identifier that T is stored by.
  */
 public abstract class ClassPool<T, I> {
 
@@ -51,6 +53,7 @@ public abstract class ClassPool<T, I> {
     /**
      * This method is recursive. It will search all sub-packages.
      * @param path - the dot delimited path of the package we are searching.
+     * @param baseType - the base class we are searching for
      * @param files - the files we are searching
      */
     private void indexClasses(String path, Class<T> baseType, File... files) {
@@ -97,7 +100,7 @@ public abstract class ClassPool<T, I> {
 
     /**
      *
-     * @return an immutable set of strings representing the types stored in this pool
+     * @return an immutable set of type I representing the types stored in this pool
      */
     public Set<I> getStoredTypes(){
         return Collections.unmodifiableSet(index.keySet());
@@ -113,7 +116,7 @@ public abstract class ClassPool<T, I> {
         T result = index.get(key);
 
         if(result == null)
-            throw new IllegalArgumentException("No class found for name " + key + " for base type " + baseType.getName());
+            throw new IllegalArgumentException("No class found for identifier " + key + " for base type " + baseType.getName());
 
         return result;
     }
