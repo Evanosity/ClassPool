@@ -9,15 +9,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A directory of classes
  * Given a package, scan the package and instantiate each of those classes. The inheritors will handle how to index
- * those classes
- * This effectively allows us to turn a string into a class. Instances of that class are held in memory,
- * but in the case of actions, that is a perfectly acceptable alternative to an enormous switch statement.
+ * those classes.
  *
- * This, in theory, is a threadsafe resource, so long as the returned objects are handled in a threadsafe manner.
+ * <br><br>
  *
- * In any case, this will do for now.
+ * This effectively allows us to turn an identifier object of type I into an object of type T.
+ *
+ * <br><br>
+ *
+ * The pool itself is threadsafe, and the objects returned should be handled in a threadsafe manner.
+ *
  * @param <T> the base type that we are searching for (Ex: Action). T has to have a 0 argument constructor, which can (should)
  *           be private.
  *
@@ -57,7 +59,6 @@ public abstract class ClassPool<T, I> {
      * @param files - the files we are searching
      */
     private void indexClasses(String path, Class<T> baseType, File... files) {
-
         try{
             for(File file : files){
                 String fileName = file.getName();
@@ -66,37 +67,47 @@ public abstract class ClassPool<T, I> {
                 if(file.isDirectory())
                     indexClasses(path + "." + fileName, baseType, file.listFiles());
 
-                    //otherwise, if its a class file, load er up.
+                //otherwise, if its a class file, load er up.
                 else if(fileName.endsWith(".class")){
                     String fullClassName = path + "." + fileName.substring(0, fileName.length() - 6);
 
                     Class<?> loadedClass = Class.forName(fullClassName);
 
+                    //if the indexed annotation isn't present, ignore the class
+                    if(! loadedClass.isAnnotationPresent(Indexed.class))
+                        continue;
 
-                    //if the class exists, has a valid superclass AND has the indexed annotation, index it
-                    if(loadedClass.isAnnotationPresent(Indexed.class) && baseType.isAssignableFrom(loadedClass)) {
+                    //if the loaded class isn't a child class of the base type, ignore the class
+                    if(! baseType.isAssignableFrom(loadedClass))
+                        continue;
 
-                        Constructor<? extends T> cons = (Constructor<? extends T>) loadedClass.getDeclaredConstructor();
-                        //this means we can disallow the objects from being instantiated normally, via private constructors
-                        cons.setAccessible(true);
+                    //Get the constructor for the loaded class
+                    Constructor<? extends T> cons = (Constructor<? extends T>) loadedClass.getDeclaredConstructor();
+                    //make sure its accessible
+                    cons.setAccessible(true);
 
-                        T instance = cons.newInstance();
+                    //instantiate the class
+                    T instance = cons.newInstance();
 
-                        I i = indexMethod(instance, loadedClass, path);
-
-                        index.put(i, instance);
-                        //System.out.println("Indexing " + className + " for group " + baseType.getName());
-                    }
+                    //index it
+                    I i = indexHandler(instance, loadedClass, path);
+                    index.put(i, instance);
                 }
             }
         }
         catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Fatal error while indexing " + path);
+            throw new RuntimeException("Fatal error while indexing " + path, e);
         }
     }
 
-    public abstract I indexMethod(T instance, Class<?> loadedClass, String path);
+    /**
+     * Handles how to index the instanced classes.
+     * @param instance the instance of type T
+     * @param loadedClass the runtime class of instance
+     * @param path the path for loadedClass
+     * @return the index for instance
+     */
+    public abstract I indexHandler(T instance, Class<?> loadedClass, String path);
 
     /**
      *
@@ -109,7 +120,7 @@ public abstract class ClassPool<T, I> {
     /**
      * Return a stored object. Will throw an error instead of returning null.
      * @param key
-     * @return
+     * @return see {@link java.util.HashMap#get(Object)}
      */
     public T get(I key){
 
@@ -120,5 +131,4 @@ public abstract class ClassPool<T, I> {
 
         return result;
     }
-
 }

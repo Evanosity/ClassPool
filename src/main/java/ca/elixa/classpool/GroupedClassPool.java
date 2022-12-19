@@ -58,10 +58,7 @@ public class GroupedClassPool<T> extends ClassPoolString<T> {
     /**
      * Get a
      * @param key
-     * @return
-     *
-     * TODO consider what happens if there are two pools
-     * with the same entity
+     * @return the resulting entity
      */
     @Override
     public T get(String key){
