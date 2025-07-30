@@ -25,6 +25,11 @@ public class ClassPoolString<T> extends ClassPool<T, String> {
      */
     @Override
     public String indexHandler(T instance, Class<?> loadedClass, String path) {
-        return loadedClass.getName().replace(path + ".", "");
+        String s = loadedClass.getName();
+
+        int finalDot = s.lastIndexOf(".");
+
+        return s.substring(finalDot + 1, s.length());
+        //return loadedClass.getName().replace(path + ".", "");
     }
 }
