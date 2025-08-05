@@ -1,12 +1,17 @@
 package ca.elixa.classpool;
 
+import org.reflections.Reflections;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static org.reflections.scanners.Scanners.SubTypes;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
 
 /**
  * Given a package, scan the package and instantiate each of those classes. The inheritors will handle how to index
@@ -40,15 +45,21 @@ public abstract class ClassPool<T, I> {
 
         this.baseType = type;
 
-        if(path != null){
-            //using the classloader, locate the package we are searching for.
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            URL url = loader.getResource(path.replace(".", "/"));
+        Reflections r = new Reflections(path);
 
-            File[] rawClasses = new File(url.getFile()).listFiles();
+        Set<Class<?>> subTypes = r.get(SubTypes.of(TypesAnnotated.with(Indexed.class)).asClass());
 
-            //index the classes.
-            indexClasses(path, baseType, rawClasses);
+        for (Class<?> c : subTypes){
+            String fullyQualifiedName = c.getName();
+
+
+            var instance = instantiate((Class<T>) c);
+
+            var i = indexHandler(instance, c, path);
+
+            System.out.println(fullyQualifiedName + " : " + i);
+
+            index.put(i, instance);
         }
     }
 
@@ -58,6 +69,7 @@ public abstract class ClassPool<T, I> {
      * @param baseType - the base class we are searching for
      * @param files - the files we are searching
      */
+    /**
     private void indexClasses(String path, Class<T> baseType, File... files) {
         try{
             for(File file : files){
@@ -81,13 +93,7 @@ public abstract class ClassPool<T, I> {
                     if(! baseType.isAssignableFrom(loadedClass))
                         continue;
 
-                    //Get the constructor for the loaded class
-                    Constructor<? extends T> cons = (Constructor<? extends T>) loadedClass.getDeclaredConstructor();
-                    //make sure its accessible
-                    cons.setAccessible(true);
 
-                    //instantiate the class
-                    T instance = cons.newInstance();
 
                     //index it
                     I i = indexHandler(instance, loadedClass, path);
@@ -97,6 +103,21 @@ public abstract class ClassPool<T, I> {
         }
         catch(Exception e){
             throw new RuntimeException("Fatal error while indexing " + path, e);
+        }
+    }*/
+
+    private T instantiate(Class<T> clazz){
+
+        try{
+            //Get the constructor for the class
+            Constructor<? extends T> cons = (Constructor<? extends T>) clazz.getDeclaredConstructor();
+            //make sure its accessible
+            cons.setAccessible(true);
+
+            return cons.newInstance();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
