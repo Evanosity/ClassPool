@@ -57,7 +57,7 @@ public abstract class ClassPool<T, I> {
 
             var i = indexHandler(instance, c, path);
 
-            System.out.println(fullyQualifiedName + " : " + i);
+            //System.out.println(fullyQualifiedName + " : " + i);
 
             index.put(i, instance);
         }
