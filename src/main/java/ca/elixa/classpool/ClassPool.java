@@ -11,7 +11,7 @@ import java.util.jar.JarFile;
  *
  * <br><br>
  *
- * This effectively allows us to turn an identifier object of type I into an object of type T.
+ * This effectively allows us to turn an identifier object of type I (ie a string) into an object of type T.
  *
  * <br><br>
  *
@@ -20,7 +20,7 @@ import java.util.jar.JarFile;
  * @param <T> the base type that we are searching for (Ex: Action). T has to have a 0 argument constructor, which can (should)
  *           be private.
  *
- * @param <I> the identifier that T is stored by.
+ * @param <I> the identifier that T is stored by (Ex: string)
  */
 public abstract class ClassPool<T, I> {
 
@@ -31,19 +31,15 @@ public abstract class ClassPool<T, I> {
     /**
      * Initialize the ClassPool
      * @param path
-     * @param baseType
+     * @param type
      */
     public ClassPool(String path, Class<T> type){
 
-        System.out.println("initializing classpool for " + path);
-
         baseType = type;
-
-        String cp = System.getProperty("java.class.path");
 
         try{
 
-            JarFile jarFile = new JarFile(cp);
+            JarFile jarFile = new JarFile(System.getProperty("java.class.path"));
             Enumeration<JarEntry> e = jarFile.entries();
 
             while (e.hasMoreElements()) {
@@ -56,22 +52,19 @@ public abstract class ClassPool<T, I> {
                     continue;
                 }
 
-                // Convert the file path to a class name (e.g., "pkg/MyClass.class" to "pkg.MyClass")
+                // Convert the file path to the fully qualified class name
                 String className = jeName.substring(0, jeName.length() - 6);
                 className = className.replace('/', '.');
 
+                //if the class doesn't have the proper prefix, skip it for speed :^)
                 if(! className.startsWith(path))
                     continue;
-
-                System.out.println(className);
 
                 // Load the class
                 Class<?> c = Class.forName(className);
 
                 if(! baseType.isAssignableFrom(c) || ! c.isAnnotationPresent(Indexed.class))
                     continue;
-
-                System.out.println("instantiating " + className);
 
                 Constructor<? extends T> cons = (Constructor<? extends T>) c.getDeclaredConstructor();
                 //make sure its accessible
@@ -84,7 +77,7 @@ public abstract class ClassPool<T, I> {
                 index.put(i, instance);
             }
 
-            jarFile.close(); // Important to close the JarFile (thanks gemini)
+            jarFile.close(); // Important to close the JarFile (thanks jemini)
 
         }
         catch(Exception e){
