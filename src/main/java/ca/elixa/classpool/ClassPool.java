@@ -31,13 +31,13 @@ public abstract class ClassPool<T, I> {
     /**
      * Initialize the ClassPool
      * @param path
-     * @param type
+     * @param baseType
      */
     public ClassPool(String path, Class<T> type){
 
         System.out.println("initializing classpool for " + path);
 
-        this.baseType = type;
+        baseType = type;
 
         String cp = System.getProperty("java.class.path");
 
@@ -68,8 +68,10 @@ public abstract class ClassPool<T, I> {
                 // Load the class
                 Class<?> c = Class.forName(className);
 
-                if(! c.isAssignableFrom(type) || ! c.isAnnotationPresent(Indexed.class))
+                if(! baseType.isAssignableFrom(c) || ! c.isAnnotationPresent(Indexed.class))
                     continue;
+
+                System.out.println("instantiating " + className);
 
                 Constructor<? extends T> cons = (Constructor<? extends T>) c.getDeclaredConstructor();
                 //make sure its accessible
