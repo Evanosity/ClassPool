@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 import static org.reflections.scanners.Scanners.SubTypes;
@@ -45,20 +48,35 @@ public abstract class ClassPool<T, I> {
 
         this.baseType = type;
 
-        String classpath = System.getProperty("java.class.path");
-        String separator = System.getProperty("path.separator");
-        String[] paths = classpath.split(separator);
+        String cp = System.getProperty("java.class.path");
 
-        System.out.println("Classpath entries:");
-        for (String p : paths) {
-            System.out.println("- " + p);
-            File file = new File(p);
+        try{
+            JarFile jarFile = new JarFile(cp);
+            Enumeration<JarEntry> e = jarFile.entries();
 
-            if (file.isDirectory()) {
-                // You can add logic here to list files within directories
-                // using file.listFiles()
+            URL[] urls = { new URL("jar:file:" + cp + "!/") };
+            URLClassLoader cl = URLClassLoader.newInstance(urls);
+
+            while (e.hasMoreElements()) {
+                JarEntry je = e.nextElement();
+                if (je.isDirectory() || !je.getName().endsWith(".class")) {
+                    continue;
+                }
+
+                // Convert the file path to a class name (e.g., "pkg/MyClass.class" to "pkg.MyClass")
+                String className = je.getName().substring(0, je.getName().length() - ".class".length());
+                className = className.replace('/', '.');
+
+                // Load the class
+                Class c = cl.loadClass(className);
+                System.out.println("Loaded class: " + c.getName());
             }
+            jarFile.close(); // Important to close the JarFile
         }
+        catch(Exception e){
+
+        }
+
     }
 
     /**
