@@ -35,6 +35,8 @@ public abstract class ClassPool<T, I> {
      */
     public ClassPool(String path, Class<T> type){
 
+        System.out.println("initializing classpool for " + path);
+
         this.baseType = type;
 
         String cp = System.getProperty("java.class.path");
@@ -58,8 +60,12 @@ public abstract class ClassPool<T, I> {
                 String className = jeName.substring(0, jeName.length() - 6);
                 className = className.replace('/', '.');
 
+                System.out.println(className);
+
                 if(! className.startsWith(path))
                     continue;
+
+                System.out.println(className);
 
                 // Load the class
                 Class<?> c = Class.forName(className);
