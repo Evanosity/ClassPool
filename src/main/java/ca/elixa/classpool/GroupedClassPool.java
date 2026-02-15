@@ -16,8 +16,8 @@ public class GroupedClassPool<T> extends ClassPoolString<T> {
      *
 =     * @param type
      */
-    public GroupedClassPool(Class<T> type, ClassPoolString<T>...pools) {
-        super("ca.elixa", type);
+    public GroupedClassPool(String path, Class<T> type, ClassPoolString<T>...pools) {
+        super(path, type);
 
         poolOfPools = new ArrayList<>();
 
