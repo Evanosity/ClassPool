@@ -45,21 +45,19 @@ public abstract class ClassPool<T, I> {
 
         this.baseType = type;
 
-        Reflections r = new Reflections(path);
+        String classpath = System.getProperty("java.class.path");
+        String separator = System.getProperty("path.separator");
+        String[] paths = classpath.split(separator);
 
-        Set<Class<?>> subTypes = r.get(SubTypes.of(TypesAnnotated.with(Indexed.class)).asClass());
+        System.out.println("Classpath entries:");
+        for (String p : paths) {
+            System.out.println("- " + p);
+            File file = new File(p);
 
-        for (Class<?> c : subTypes){
-            String fullyQualifiedName = c.getName();
-
-
-            var instance = instantiate((Class<T>) c);
-
-            var i = indexHandler(instance, c, path);
-
-            //System.out.println(fullyQualifiedName + " : " + i);
-
-            index.put(i, instance);
+            if (file.isDirectory()) {
+                // You can add logic here to list files within directories
+                // using file.listFiles()
+            }
         }
     }
 
@@ -69,7 +67,6 @@ public abstract class ClassPool<T, I> {
      * @param baseType - the base class we are searching for
      * @param files - the files we are searching
      */
-    /**
     private void indexClasses(String path, Class<T> baseType, File... files) {
         try{
             for(File file : files){
@@ -96,15 +93,15 @@ public abstract class ClassPool<T, I> {
 
 
                     //index it
-                    I i = indexHandler(instance, loadedClass, path);
-                    index.put(i, instance);
+                    //I i = indexHandler(instance, loadedClass, path);
+                    //index.put(i, instance);
                 }
             }
         }
         catch(Exception e){
             throw new RuntimeException("Fatal error while indexing " + path, e);
         }
-    }*/
+    }
 
     private T instantiate(Class<T> clazz){
 
