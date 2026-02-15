@@ -60,8 +60,6 @@ public abstract class ClassPool<T, I> {
                 String className = jeName.substring(0, jeName.length() - 6);
                 className = className.replace('/', '.');
 
-                System.out.println(className);
-
                 if(! className.startsWith(path))
                     continue;
 
